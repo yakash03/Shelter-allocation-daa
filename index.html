@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emergency Shelter Allocation and Evacuation Network System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef2f4;--surface:#fff;--ink:#14232b;--muted:#51636d;--line:#cfdadf;--blue:#1f5a7a;--S1:#1f5a7a;--S2:#2e7d5b;--S3:#c2410c;--red:#b42318}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1a20;--surface:#16252d;--ink:#e6eef1;--muted:#9bb0ba;--line:#2a3d47;--blue:#6bb4d6;--S1:#6bb4d6;--S2:#5fc592;--S3:#f59a63;--red:#ff8a80}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1.05rem/1.65 "Source Serif 4",Georgia,serif}
+h1,h2,h3,nav{font-family:"Bricolage Grotesque",system-ui,sans-serif}
+a{color:var(--blue)}
+:focus-visible{outline:3px solid var(--S3);outline-offset:2px}
+header{padding:56px 20px 28px;max-width:1000px;margin:auto}
+h1{font-size:clamp(2rem,5.5vw,3.6rem);line-height:1.05;margin:0 0 14px;letter-spacing:-.02em}
+.sub{color:var(--muted);max-width:62ch;margin:0 0 6px}
+.who{font-family:"Bricolage Grotesque",sans-serif;font-weight:500;margin-top:14px}
+nav{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);z-index:5;overflow-x:auto;white-space:nowrap}
+nav div{max-width:1000px;margin:auto;padding:10px 20px;display:flex;gap:20px}
+nav a{text-decoration:none;color:var(--ink);font-weight:500;font-size:.95rem}
+nav a:hover{text-decoration:underline}
+main{max-width:1000px;margin:auto;padding:0 20px 60px}
+section{padding-top:44px}
+h2{font-size:1.7rem;margin:0 0 12px;letter-spacing:-.01em}
+h3{font-size:1.1rem;margin:22px 0 6px}
+p{max-width:72ch}
+.wrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.92rem;font-family:system-ui,sans-serif}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;background:color-mix(in srgb,var(--line) 40%,transparent)}
+tr:last-child td{border-bottom:0}
+code,pre{font-family:ui-monospace,Consolas,monospace;font-size:.85rem}
+pre{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px;overflow-x:auto;line-height:1.5}
+.lab{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px}
+.ctl{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;font-family:system-ui,sans-serif;margin-bottom:8px}
+.cost{font:700 1.5rem "Bricolage Grotesque",sans-serif}
+button{font:600 .95rem system-ui,sans-serif;padding:9px 16px;border-radius:6px;border:2px solid var(--ink);background:var(--surface);color:var(--ink);cursor:pointer}
+button[aria-pressed=true]{background:var(--red);border-color:var(--red);color:#fff}
+svg{width:100%;height:auto;display:block}
+.road{stroke:var(--line);stroke-width:3;stroke-linecap:round}
+.route{stroke-width:6;stroke-linecap:round;opacity:.9}
+.blocked{stroke:var(--red);stroke-width:4;stroke-dasharray:7 7}
+.nl{font:600 13px system-ui,sans-serif;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.ew{font:12px system-ui,sans-serif;fill:var(--muted);text-anchor:middle}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font:.85rem system-ui,sans-serif;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.fail{color:var(--red);font-weight:600}
+footer{max-width:1000px;margin:auto;padding:20px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:no-preference){.route{transition:stroke .25s}}
+</style>
+</head>
+<body>
+<header>
+<h1>Emergency Shelter Allocation and Evacuation Network System</h1>
+<p class="sub">An algorithmic approach to population-, capacity- and network-aware evacuation planning. Design and Analysis of Algorithms assignment report.</p>
+<p class="who">Yakash S · Reg. No. 711525BCS187</p>
+</header>
+<nav aria-label="Sections"><div>
+<a href="#demo">Try the network</a><a href="#abstract">Abstract</a><a href="#problem">Problem</a><a href="#approach">Approach</a><a href="#results">Results</a><a href="#complexity">NP-completeness</a><a href="#code">Code</a><a href="#conclusion">Conclusion</a>
+</div></nav>
+<main>
+
+<section id="demo">
+<h2>Try the sample network</h2>
+<p>Zones A–E (populations 400, 250, 300, 150, 200) send people to shelters S1–S3 (capacities 500, 450, 400). Close the road J1–S1 and see the optimal plan change.</p>
+<div class="lab">
+<div class="ctl">
+<div>Total travel burden: <span class="cost" id="cost">13,750</span> person-min <span id="was" style="color:var(--muted)"></span></div>
+<button id="tog" aria-pressed="false">Close road J1–S1</button>
+</div>
+<svg viewBox="0 0 720 380" role="img" aria-label="Road network with zones, junctions and shelters. Coloured lines show the optimal evacuation route of each zone." id="net"></svg>
+<div class="legend"><span><i style="background:var(--S1)"></i>to S1</span><span><i style="background:var(--S2)"></i>to S2</span><span><i style="background:var(--S3)"></i>to S3</span><span>Circles: zones · Squares: shelters · Small dots: junctions</span></div>
+<div class="wrap" style="margin-top:12px"><table><thead><tr><th>Zone</th><th>People</th><th>Shelter</th><th>Route</th></tr></thead><tbody id="rows"></tbody></table></div>
+<p style="font:.9rem system-ui,sans-serif;color:var(--muted);margin-bottom:0">The nearest-feasible greedy rule fails on this network: it leaves no shelter with 200 free places for zone E, although a feasible plan exists.</p>
+</div>
+</section>
+
+<section id="abstract">
+<h2>Abstract</h2>
+<p>When a flood, cyclone or earthquake forces a region to evacuate, planners must decide which zone sends its people to which shelter, and along which roads. The problem is modelled on a weighted road network: nodes are zones (with populations), junctions and shelters (with capacities); edges are roads with travel times, some blocked.</p>
+<p>The system is built in layers, one per syllabus unit: divide and conquer prioritises zones; greedy methods schedule buses, supplies and rescue tasks; dynamic programming selects zones for a shelter and compares routes; graph algorithms test connectivity and compute safe routes. Whole-zone allocation is shown NP-complete by reduction from PARTITION. On a ten-node test network, brute force examines 243 assignments, branch and bound finds the same optimum (13,750 person-minutes) in 25 search nodes, and the greedy heuristic finds no feasible plan.</p>
+<p><strong>Keywords:</strong> evacuation planning, shelter allocation, shortest path, dynamic programming, branch and bound, NP-completeness, bin packing, approximation algorithms.</p>
+</section>
+
+<section id="problem">
+<h2>Problem statement</h2>
+<p><strong>Input.</strong> Undirected weighted graph G=(V,E,t) with travel times t(e)&gt;0; zones Z with populations p<sub>z</sub>; shelters S with capacities c<sub>s</sub>; blocked roads B. Let n=|Z|, m=|S|, v=|V|, e=|E|.</p>
+<p><strong>Output.</strong> An assignment f: Z→S and a route from each zone to f(z) in G−B.</p>
+<p><strong>Constraints.</strong> (1) The people sent to a shelter never exceed its capacity. (2) Each zone goes to exactly one shelter. (3) Routes avoid blocked roads. (4) Total capacity ≥ total population.</p>
+<p><strong>Objective.</strong> Minimise Σ p<sub>z</sub> · d(z, f(z)), where d is the shortest travel time in G−B.</p>
+<h3>Basic approaches</h3>
+<p>Brute force enumerates all m<sup>n</sup> assignments, T(n)=O(n·m<sup>n</sup>); for n=30 and m=6 that is about 2.2×10²³. Greedy sorts zones by population and picks the nearest shelter with room: O(n log n + nm), fast but with no optimality guarantee, and it can fail outright.</p>
+</section>
+
+<section id="approach">
+<h2>Proposed approach</h2>
+<div class="wrap"><table>
+<thead><tr><th>Stage</th><th>Purpose</th><th>Algorithms</th></tr></thead><tbody>
+<tr><td>1 Network health</td><td>Which shelters are reachable after closures</td><td>BFS, DFS</td></tr>
+<tr><td>2 Road backbone</td><td>Cheapest roads keeping everything connected</td><td>Prim, Kruskal</td></tr>
+<tr><td>3 Travel times</td><td>Shortest route zone → shelter</td><td>Dijkstra, Bellman-Ford, Floyd-Warshall</td></tr>
+<tr><td>4 Prioritisation</td><td>Order zones; match demand to shelter size</td><td>Merge sort, Quick sort, Max-Min, Binary search</td></tr>
+<tr><td>5 Logistics</td><td>Bus trips, supplies, rescue tasks with deadlines</td><td>Activity selection, Fractional knapsack, Job sequencing</td></tr>
+<tr><td>6 Zone selection</td><td>Fill one shelter with the most risk-weighted people</td><td>0/1 knapsack (three DP forms)</td></tr>
+<tr><td>7 Route analysis</td><td>Compare planned and detour routes; shelter lookup</td><td>LCS, Optimal BST</td></tr>
+<tr><td>8 Allocation</td><td>Exact and approximate zone-to-shelter assignment</td><td>Backtracking, Branch and bound, Min-cost flow, First-Fit Decreasing</td></tr>
+</tbody></table></div>
+<h3>Key analysis</h3>
+<p>Merge sort: T(n)=2T(n/2)+Θ(n) gives Θ(n log n) by Master case 2 (also shown by substitution and recursion tree). Max-Min needs 3n/2−2 comparisons. Binary search over shelters sorted by capacity finds the smallest sufficient shelter in O(log m). Dijkstra runs in O((v+e) log v). Branch and bound uses the bound <em>cost so far + Σ p<sub>z</sub>·(distance to nearest shelter, ignoring capacity)</em>, which never overestimates, so pruning is safe.</p>
+<div class="wrap"><table>
+<thead><tr><th>Algorithm</th><th>Time</th><th>Space</th></tr></thead><tbody>
+<tr><td>BFS / DFS</td><td>Θ(v+e)</td><td>Θ(v)</td></tr>
+<tr><td>Dijkstra (heap)</td><td>O((v+e) log v)</td><td>Θ(v)</td></tr>
+<tr><td>Bellman-Ford</td><td>O(ve)</td><td>Θ(v)</td></tr>
+<tr><td>Floyd-Warshall</td><td>Θ(v³)</td><td>Θ(v²)</td></tr>
+<tr><td>Kruskal / Prim</td><td>O(e log e) / O(e log v)</td><td>Θ(v)</td></tr>
+<tr><td>0/1 knapsack</td><td>Θ(nC) (pseudo-polynomial)</td><td>Θ(nC) table, Θ(C) one row</td></tr>
+<tr><td>Brute force allocation</td><td>Θ(n·m<sup>n</sup>)</td><td>O(n)</td></tr>
+<tr><td>Backtracking / Branch and bound</td><td>O(m<sup>n</sup>) worst case</td><td>O(n)</td></tr>
+<tr><td>First-Fit Decreasing</td><td>O(n log n + nb)</td><td>O(n)</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="results">
+<h2>Results and discussion</h2>
+<div class="wrap"><table>
+<thead><tr><th>Test</th><th>What it checks</th><th>Result</th></tr></thead><tbody>
+<tr><td>T1</td><td>Shortest paths, spanning tree</td><td>Dijkstra = Bellman-Ford = Floyd-Warshall: d(A,S1)=9; Kruskal = Prim: weight 31</td></tr>
+<tr><td>T2</td><td>Sorting, max-min, binary search</td><td>Order 400, 300, 250, 200, 150; max 400, min 150; smallest shelter ≥300 is 400</td></tr>
+<tr><td>T3</td><td>Allocation, base network</td><td>Brute force 13,750 (243 checked); backtracking 26 nodes; branch and bound 25 nodes; <span class="fail">greedy failed</span></td></tr>
+<tr><td>T4</td><td>Road closure J1–S1</td><td>Everything stays reachable; new optimum 14,850 (was 13,750)</td></tr>
+<tr><td>T5</td><td>Tight capacities (S3=350)</td><td>Whole-zone plan infeasible; splittable min-cost flow ships 1,300 at cost 10,550</td></tr>
+<tr><td>T6</td><td>0/1 knapsack, three DP styles</td><td>77 from bottom-up, top-down and space-optimised</td></tr>
+<tr><td>T7</td><td>PARTITION reduction</td><td>[3,1,1,2,2,1] → True; [2,3,7] → False</td></tr>
+<tr><td>T8</td><td>Random instance, n=10, m=3</td><td>Both exact methods give 4,604; branch and bound visits 22 nodes of 59,049 (0.04%)</td></tr>
+<tr><td>T9</td><td>Shelters to open</td><td>FFD opens 3, meeting the lower bound ⌈1300/500⌉</td></tr>
+<tr><td>T10</td><td>Greedy logistics, LCS</td><td>Trips B1, B4, B5; supplies 240.0; rescue profit 142; LCS = 7</td></tr>
+</tbody></table></div>
+<p>The polynomial algorithms agree, so the routing layer is trustworthy. Whole-zone allocation is where cost grows: brute force is exponential, and the greedy rule can fail even when a plan exists (T3, T5). Branch and bound matched the brute-force optimum in every test, but its worst case stays exponential, so very large regions call for approximation or flow-based methods. T4 shows the plan must be recomputed whenever the network changes.</p>
+</section>
+
+<section id="complexity">
+<h2>NP-completeness of whole-zone allocation</h2>
+<div class="wrap"><table>
+<thead><tr><th>Sub-problem</th><th>Class</th><th>Reason</th></tr></thead><tbody>
+<tr><td>Fastest route zone → shelter</td><td>P</td><td>Dijkstra</td></tr>
+<tr><td>Connectivity after closures</td><td>P</td><td>BFS / DFS</td></tr>
+<tr><td>Splittable allocation</td><td>P</td><td>Min-cost flow</td></tr>
+<tr><td>Whole-zone allocation (SA)</td><td>NP-complete</td><td>Reduction from PARTITION</td></tr>
+<tr><td>Whole-zone with distance cost</td><td>NP-hard</td><td>Contains SA; generalised assignment</td></tr>
+<tr><td>Minimising shelters opened</td><td>NP-hard</td><td>Bin packing</td></tr>
+</tbody></table></div>
+<p><strong>In NP.</strong> The certificate is the assignment f; a verifier computes each shelter's load in one pass and checks it against capacity in O(n+m).</p>
+<p><strong>NP-hard.</strong> Given positive integers a<sub>1..n</sub> with total 2B, build n zones with p<sub>i</sub>=a<sub>i</sub> and two shelters of capacity B. If a subset sums to B, send it to shelter 1 and the rest to shelter 2. Conversely, a feasible plan has both loads ≤ B and summing to 2B, so each equals B exactly, and the zones in shelter 1 form a subset of sum B. Hence SA is NP-complete (Karp, 1972).</p>
+<p><strong>Approximation.</strong> FFD uses at most (11/9)·OPT + 6/9 bins (Dósa, 2007). Greedy set cover gives an H(n) ≤ ln n + 1 factor (Chvátal, 1979). Approximation is not appropriate where a hard capacity rule is a safety requirement, because heuristics can fail to find any feasible plan.</p>
+</section>
+
+<section id="code">
+<h2>Core implementation (Python 3, standard library only)</h2>
+<p>Branch and bound for whole-zone allocation. Setting <code>bound=False</code> gives plain backtracking.</p>
+<pre><code>def search(pop, cap, D, bound=True):
+    zs = merge_sort(list(pop), key=lambda z: -pop[z]); ss = list(cap)
+    lb = [0] * (len(zs) + 1)
+    for i in range(len(zs) - 1, -1, -1):
+        lb[i] = lb[i+1] + pop[zs[i]] * min(D[zs[i]][s] for s in ss)
+    best, nodes, rem, asg = [INF, None], [0], dict(cap), {}
+    def go(i, cost):
+        nodes[0] += 1
+        if bound and cost + lb[i] >= best[0]: return
+        if i == len(zs):
+            if cost &lt; best[0]: best[0], best[1] = cost, dict(asg)
+            return
+        z = zs[i]
+        for s in sorted(ss, key=lambda s: D[z][s]):
+            if rem[s] &gt;= pop[z] and D[z][s] &lt; INF:
+                rem[s] -= pop[z]; asg[z] = s
+                go(i + 1, cost + pop[z] * D[z][s])
+                rem[s] += pop[z]; del asg[z]
+    go(0, 0)
+    return best[0], best[1], nodes[0]</code></pre>
+<p>The full program also contains Dijkstra, BFS/DFS, Bellman-Ford, Floyd-Warshall, Prim, Kruskal, knapsack, min-cost flow, FFD and the ten-test driver.</p>
+</section>
+
+<section id="conclusion">
+<h2>Limitations, future work and conclusion</h2>
+<p><strong>Limitations.</strong> Exact allocation is exponential in the worst case. Travel times are fixed, so congestion and time-varying capacity are ignored. The test network is small and hand-built; real road data is not used.</p>
+<p><strong>Future work.</strong> Time-expanded networks, integer linear programming and metaheuristics, live road-closure feeds on real maps, vulnerability-aware priorities (hospitals, care homes), and a web dashboard.</p>
+<p><strong>Conclusion.</strong> Routing, connectivity, backbones, sorting, logistics scheduling and splittable allocation are solved in polynomial time, and zone selection uses dynamic programming. The central whole-zone allocation is NP-complete, which explains why brute force scales as O(n·m<sup>n</sup>), why greedy can fail, and why branch and bound, flow relaxation and approximation are the right tools. The main lesson: match the algorithm to the class of the sub-problem.</p>
+</section>
+
+<section>
+<h2>References</h2>
+<p style="font-size:.92rem">Cormen et al., <em>Introduction to Algorithms</em>, 4th ed., MIT Press, 2022 · Levitin, <em>Introduction to the Design and Analysis of Algorithms</em>, 3rd ed., 2012 · Horowitz, Sahni, Rajasekaran, <em>Fundamentals of Computer Algorithms</em>, 2008 · Kleinberg and Tardos, <em>Algorithm Design</em>, 2006 · Garey and Johnson, <em>Computers and Intractability</em>, 1979 · Dijkstra, 1959 · Bellman, 1958 · Floyd, 1962 · Kruskal, 1956 · Prim, 1957 · Strassen, 1969 · Hoare, 1962 · Cook, 1971 · Karp, 1972 · Ford and Fulkerson, <em>Flows in Networks</em>, 1962 · Johnson, 1974 · Dósa, 2007 · Chvátal, 1979 · Hamacher and Tjandra, 2002 · Bentley, Haken and Saxe, 1980.</p>
+</section>
+</main>
+<footer>Design and Analysis of Algorithms – Assignment Report · Yakash S · 711525BCS187</footer>
+
+<script>
+(function(){
+var N={A:[50,60,'z'],B:[50,200,'z'],C:[230,320,'z'],D:[520,320,'z'],E:[680,320,'z'],J1:[210,130,'j'],J2:[400,200,'j'],S1:[380,50,'s'],S2:[630,200,'s'],S3:[620,70,'s']};
+var E=[['A','J1',4],['B','J1',3],['J1','S1',5],['J1','J2',2],['C','J2',4],['D','J2',3],['J2','S2',6],['J2','S3',7],['E','S3',3],['D','S2',5],['C','S1',9],['B','A',2],['E','D',4]];
+var POP={A:400,B:250,C:300,D:150,E:200};
+var PLAN={
+ ok:{cost:13750,r:{A:['S3',['A','J1','J2','S3']],B:['S1',['B','J1','S1']],C:['S2',['C','J2','S2']],D:['S2',['D','S2']],E:['S1',['E','D','J2','J1','S1']]}},
+ cut:{cost:14850,r:{A:['S3',['A','J1','J2','S3']],B:['S2',['B','J1','J2','S2']],C:['S1',['C','S1']],D:['S1',['D','J2','C','S1']],E:['S2',['E','D','S2']]}}
+};
+var COL={S1:'var(--S1)',S2:'var(--S2)',S3:'var(--S3)'};
+var svg=document.getElementById('net'),rows=document.getElementById('rows'),cost=document.getElementById('cost'),was=document.getElementById('was'),tog=document.getElementById('tog');
+function k(a,b){return a<b?a+b:b+a}
+function el(t,a,txt){var e=document.createElementNS('http://www.w3.org/2000/svg',t);for(var x in a)e.setAttribute(x,a[x]);if(txt)e.textContent=txt;return e}
+function draw(cut){
+ var p=PLAN[cut?'cut':'ok'],used={};
+ svg.textContent='';
+ E.forEach(function(e){var a=N[e[0]],b=N[e[1]],blocked=cut&&k(e[0],e[1])==='J1S1';
+  svg.appendChild(el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],class:blocked?'blocked':'road'}));
+  svg.appendChild(el('text',{x:(a[0]+b[0])/2,y:(a[1]+b[1])/2-6,class:'ew'},e[2]));});
+ for(var z in p.r){var path=p.r[z][1];for(var i=0;i<path.length-1;i++){var a=N[path[i]],b=N[path[i+1]];
+  svg.appendChild(el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],class:'route',stroke:COL[p.r[z][0]],'stroke-dasharray':i%2?'':'none'}));}}
+ for(var n in N){var q=N[n];
+  if(q[2]==='s'){svg.appendChild(el('rect',{x:q[0]-22,y:q[1]-22,width:44,height:44,rx:6,fill:'var(--surface)',stroke:COL[n],'stroke-width':3}));}
+  else if(q[2]==='z'){svg.appendChild(el('circle',{cx:q[0],cy:q[1],r:22,fill:'var(--surface)',stroke:COL[p.r[n][0]],'stroke-width':3}));}
+  else{svg.appendChild(el('circle',{cx:q[0],cy:q[1],r:6,fill:'var(--muted)'}));}
+  svg.appendChild(el('text',{x:q[0],y:q[2]==='j'?q[1]+20:q[1],class:'nl'},n));}
+ rows.textContent='';
+ for(var z2 in p.r){var tr=document.createElement('tr');[z2,POP[z2],p.r[z2][0],p.r[z2][1].join(' → ')].forEach(function(v){var td=document.createElement('td');td.textContent=v;tr.appendChild(td)});rows.appendChild(tr)}
+ cost.textContent=p.cost.toLocaleString('en-US');
+ was.textContent=cut?'(was 13,750; closure adds 1,100)':'';
+}
+tog.addEventListener('click',function(){var on=tog.getAttribute('aria-pressed')!=='true';tog.setAttribute('aria-pressed',on);tog.textContent=on?'Reopen road J1–S1':'Close road J1–S1';draw(on)});
+draw(false);
+})();
+</script>
+</body>
+</html>
